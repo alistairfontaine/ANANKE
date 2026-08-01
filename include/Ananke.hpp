@@ -24,23 +24,6 @@ namespace Ananke {
         int num_qubits;
         StateVector state;
 
-        Matrix tensor_product(const Matrix& A, const Matrix& B) {
-            size_t rA = A.size(), cA = A[0].size();
-            size_t rB = B.size(), cB = B[0].size();
-            Matrix result(rA * rB, std::vector<Complex>(cA * cB, ZERO));
-
-            for (size_t i = 0; i < rA; ++i) {
-                for (size_t j = 0; j < cA; ++j) {
-                    for (size_t k = 0; k < rB; ++k) {
-                        for (size_t l = 0; l < cB; ++l) {
-                            result[i * rB + k][j * cB + l] = A[i][j] * B[k][l];
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
     public:
         QuantumRegister(int qubits) : num_qubits(qubits) {
             size_t dim = 1 << qubits;
@@ -48,33 +31,28 @@ namespace Ananke {
             state[0] = ONE;
         }
 
+        // Blazing-fast In-Place Bitwise Gate Application (Zero RAM Allocations)
         void apply_gate(const Matrix& gate, int target) {
-            Matrix I = {{ONE, ZERO}, {ZERO, ONE}};
-            Matrix full_operator;
-
-            if (target == 0) {
-                full_operator = gate;
-            } else {
-                full_operator = I;
-            }
-
-            for (int i = 1; i < num_qubits; ++i) {
-                if (i == target) {
-                    full_operator = tensor_product(full_operator, gate);
-                } else {
-                    full_operator = tensor_product(full_operator, I);
-                }
-            }
-
             size_t dim = 1 << num_qubits;
-            StateVector next_state(dim, ZERO);
-            for (size_t i = 0; i < dim; ++i) {
-                for (size_t j = 0; j < dim; ++j) {
-                    next_state[i] += full_operator[i][j] * state[j];
+            // Target mask mapping to match string ordering (num_qubits - 1 - target)
+            int target_shift = num_qubits - 1 - target;
+            size_t chunk_size = 1 << target_shift;
+
+            for (size_t i = 0; i < dim; i += (chunk_size << 1)) {
+                for (size_t j = 0; j < chunk_size; ++j) {
+                    size_t i0 = i + j;
+                    size_t i1 = i0 + chunk_size;
+
+                    Complex c0 = state[i0];
+                    Complex c1 = state[i1];
+
+                    // Linear matrix combination mapping directly to isolated state amplitudes
+                    state[i0] = gate[0][0] * c0 + gate[0][1] * c1;
+                    state[i1] = gate[1][0] * c0 + gate[1][1] * c1;
                 }
             }
-            state = next_state;
         }
+
 
         void apply_cnot(int control, int target) {
             size_t dim = 1 << num_qubits;
