@@ -67,7 +67,25 @@ void run_script(const std::string& filepath) {
             reg->print_state();
             std::string result = reg->measure();
             std::cout << "\n[+] State Collapsed! Final Measurement Result: |" << result << ">" << std::endl;
+        } else if (command == "oracle") {
+            if (!reg) {
+                std::cerr << "[-] Error: Qubit allocation must happen before oracle execution." << std::endl;
+                return;
+            }
+            std::string oracle_type;
+            ss >> oracle_type;
+
+            if (oracle_type == "constant") {
+                // Constant Oracle (f(x) = 1): Flip the target ancilla qubit (last qubit)
+                reg->apply_gate(Ananke::X(), 1);
+                std::cout << "[*] Executing Hidden Oracle: Type [CONSTANT]" << std::endl;
+            } else if (oracle_type == "balanced") {
+                // Balanced Oracle: Entangle input query qubit with target ancilla via CNOT
+                reg->apply_cnot(0, 1);
+                std::cout << "[*] Executing Hidden Oracle: Type [BALANCED]" << std::endl;
+            }
         }
+
     }
 }
 

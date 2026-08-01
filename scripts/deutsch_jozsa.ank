@@ -1,0 +1,19 @@
+# ANANKE Native Quantum Script
+# Testing Deutsch-Jozsa Algorithm to evaluate a function in a single execution step
+qubits 2
+
+# Initialize target ancilla qubit 1 to |1> using Pauli-X
+gate X 1
+
+# Put both data qubit 0 and ancilla qubit 1 into full superposition
+gate H 0
+gate H 1
+
+# Fire the hidden black-box function. Try switching 'balanced' to 'constant' to test both paths!
+oracle balanced
+
+# Apply Hadamard again to decode interference channels
+gate H 0
+
+# If data qubit 0 measures |0>, the function is CONSTANT. If it measures |1>, it is BALANCED.
+measure
