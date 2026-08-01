@@ -37,17 +37,26 @@ void run_script(const std::string& filepath) {
             }
             std::string gate_type;
             int target;
-            ss >> gate_type;
-            ss >> target;
+            ss >> gate_type >> target;
 
             if (gate_type == "H") {
                 reg->apply_gate(Ananke::H(), target);
                 std::cout << "[*] Executed Hadamard (H) on qubit " << target << std::endl;
-            } else if (command == "X") {
+            } else if (gate_type == "X") {
                 reg->apply_gate(Ananke::X(), target);
                 std::cout << "[*] Executed Pauli-X (NOT) on qubit " << target << std::endl;
+            } else if (gate_type == "R") {
+                double phase_angle;
+                ss >> phase_angle;
+                Ananke::Matrix R_gate = {
+                    {Ananke::ONE, Ananke::ZERO},
+                    {Ananke::ZERO, std::exp(Ananke::Complex(0.0, phase_angle))}
+                };
+                reg->apply_gate(R_gate, target);
+                std::cout << "[*] Executed Phase-Shift R(" << phase_angle << " rad) on qubit " << target << std::endl;
             }
-        } else if (command == "cnot") {
+        }
+            else if (command == "cnot") {
             if (!reg) return;
             int control, target;
             ss >> control >> target;
