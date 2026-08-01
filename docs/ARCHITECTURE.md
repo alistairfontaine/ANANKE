@@ -17,6 +17,7 @@ $$
 This yields a $2^n \times 2^n$ unitary matrix which is then multiplied by the state vector.
 
 ## 2. Pipeline Execution flow
-1.  **Allocation:** Instantiating `QuantumRegister(n)` initializes the state vector to $\lvert 00\dots0 \rangle$.
-2.  **Transformation:** Single-qubit gates or multi-qubit conditional gates (like CNOT) mutate the state vector amplitudes through matrix operations.
-3.  **Measurement (Collapse):** A pseudorandom engine samples the cumulative distribution of squared amplitudes $\lvert c_i \rvert^2$, collapsing the state vector deterministically into a single classical binary string.
+1.  **Ingestion:** The engine reads a native quantum instruction file script (`.ank`).
+2.  **Allocation:** Instantiating `QuantumRegister(n)` based on the script header, initializing the state vector to $\lvert 00\dots0 \rangle$.
+3.  **Transformation:** Parsing individual gate tokens sequentially to mutate the state vector amplitudes through matrix operators.
+4.  **Measurement (Collapse):** Processing measurement instructions to collapse the quantum state vector into a classical binary string output.

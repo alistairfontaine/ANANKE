@@ -6,28 +6,19 @@ Compile the project natively using `g++`:
 g++ -O3 -std=c++17 src/main.cpp -o ananke_sim
 ```
 
-## Basic API Usage
+## Native Code Execution (.ank)
 
-### 1. Creating a Register
-```cpp
-// Instantiate a register with 3 qubits (dimension 8)
-Ananke::QuantumRegister reg(3);
+`ANANKE` reads and processes custom quantum scripts using the `.ank` file extension. The script layouts use deterministic token commands per line:
+
+```text
+qubits 2
+gate H 0
+cnot 0 1
+measure
 ```
 
-### 2. Mutating States
-```cpp
-// Apply Hadamard to qubit 0 to put it into superposition
-reg.apply_gate(Ananke::H(), 0);
-
-// Entangle qubit 0 (control) with qubit 1 (target)
-reg.apply_cnot(0, 1);
-```
-
-### 3. Debugging and Measurement
-```cpp
-// Print out all active states with probabilities > 0%
-reg.print_state();
-
-// Collapse the state vector and capture the classical result
-std::string outcome = reg.measure();
+### Running a Native Script File
+```bash
+g++ -O3 -std=c++17 src/main.cpp -o ananke_sim
+./ananke_sim scripts/bell_state.ank
 ```

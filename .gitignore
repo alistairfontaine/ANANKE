@@ -5,6 +5,9 @@ ananke_sim
 *.o
 *.out
 
+# Custom test files
+*.ank
+
 # IDE or Editor backup remnants
 *~
 *.swp
