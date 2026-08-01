@@ -1,0 +1,10 @@
+# Build Executables
+ananke_sim
+
+# Object Files
+*.o
+*.out
+
+# IDE or Editor backup remnants
+*~
+*.swp
