@@ -1,0 +1,16 @@
+# ANANKE Native Quantum Script
+# Testing Grover's Search Algorithm to amplify a hidden marked database item
+qubits 2
+
+# Step 1: Put all database elements into an equal superposition state
+gate H 0
+gate H 1
+
+# Step 2: Query the hidden search oracle (marks target state |11> with a phase flip)
+oracle search
+
+# Step 3: Run the standalone Diffusion Operator to amplify the marked state's amplitude
+diffusion
+
+# The state vector should now cleanly show the target state |11> amplified to 100%
+measure

@@ -28,13 +28,12 @@ namespace Ananke {
         QuantumRegister(int qubits) : num_qubits(qubits) {
             size_t dim = 1 << qubits;
             state.assign(dim, ZERO);
-            state[0] = ONE;
+            state[0] = ONE; // Initialize to ground state |00...0>
         }
 
         // Blazing-fast In-Place Bitwise Gate Application (Zero RAM Allocations)
         void apply_gate(const Matrix& gate, int target) {
             size_t dim = 1 << num_qubits;
-            // Target mask mapping to match string ordering (num_qubits - 1 - target)
             int target_shift = num_qubits - 1 - target;
             size_t chunk_size = 1 << target_shift;
 
@@ -46,13 +45,12 @@ namespace Ananke {
                     Complex c0 = state[i0];
                     Complex c1 = state[i1];
 
-                    // Linear matrix combination mapping directly to isolated state amplitudes
+                    // Explicit 2x2 Matrix-Vector dot product logic without external dependencies
                     state[i0] = gate[0][0] * c0 + gate[0][1] * c1;
                     state[i1] = gate[1][0] * c0 + gate[1][1] * c1;
                 }
             }
         }
-
 
         void apply_cnot(int control, int target) {
             size_t dim = 1 << num_qubits;
@@ -66,6 +64,29 @@ namespace Ananke {
                 }
             }
             state = next_state;
+        }
+
+        // Grover Diffusion Operator: In-place inversion about the mean (Zero Allocations)
+        void apply_diffusion() {
+            size_t dim = 1 << num_qubits;
+            Complex sum(0.0, 0.0);
+
+            for (size_t i = 0; i < dim; ++i) {
+                sum += state[i];
+            }
+
+            Complex mean = sum / static_cast<double>(dim);
+
+            for (size_t i = 0; i < dim; ++i) {
+                state[i] = 2.0 * mean - state[i];
+            }
+        }
+
+        // Target Phase Inversion for multi-qubit search scripts
+        void apply_phase_flip(size_t target_index) {
+            if (target_index < state.size()) {
+                state[target_index] = -state[target_index];
+            }
         }
 
         std::string measure() {

@@ -3,21 +3,20 @@
 ## 1. Mathematical Mechanics
 A quantum state of $n$ qubits is a state vector $\lvert \psi \rangle$ in a $2^n$-dimensional Hilbert Space.
 
-### State Vector Representation
-We bypass external matrix engines by leveraging `std::vector<std::complex<double>>`.
-*   A system of $1$ qubit has a size of $2^1 = 2$.
-*   A system of $3$ qubits has a size of $2^3 = 8$.
-*   Memory footprint scales exponentially at $2^n \times 16$ bytes (per complex double).
+### In-Place Bitwise Amplitude Mutation
+To avoid constructing massive $2^n \times 2^n$ dense matrices for simple single-qubit transformations, `ANANKE` maps 2x2 complex unitary operations directly onto state vector pairs using bitwise offset masks:
+```cpp
+int target_shift = num_qubits - 1 - target;
+size_t chunk_size = 1 << target_shift;
+// Iterates through indices pairing states separated by the target bit configuration
+size_t i0 = i + j;
+size_t i1 = i0 + chunk_size;
+```
+This reduces structural processing complexity from $\mathcal{O}(4^n)$ down to $\mathcal{O}(2^n)$ runtime steps with zero auxiliary heap space overhead.
 
-### The Kronecker (Tensor) Product
-To scale a local single-qubit gate $U$ (a $2 \times 2$ matrix) to operate on a specific qubit index inside an $n$-qubit global register, `ANANKE` computes the global operator matrix via Kronecker expansions:
+### Grover Amplitude Inversion
+The diffusion operator reflects all active quantum states around the global mean value:
 $$
-\mathcal{O} = I \otimes I \otimes \dots \otimes U \otimes \dots \otimes I
+\lvert \psi_{next} \rangle = 2\mu - \lvert \psi_{current} \rangle
 $$
-This yields a $2^n \times 2^n$ unitary matrix which is then multiplied by the state vector.
-
-## 2. Pipeline Execution flow
-1.  **Ingestion:** The engine reads a native quantum instruction file script (`.ank`).
-2.  **Allocation:** Instantiating `QuantumRegister(n)` based on the script header, initializing the state vector to $\lvert 00\dots0 \rangle$.
-3.  **Transformation:** Parsing individual gate tokens sequentially to mutate the state vector amplitudes through matrix operators.
-4.  **Measurement (Collapse):** Processing measurement instructions to collapse the quantum state vector into a classical binary string output.
+Where $\mu$ is the computed complex average amplitude across the entire register.

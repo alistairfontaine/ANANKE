@@ -83,8 +83,24 @@ void run_script(const std::string& filepath) {
                 // Balanced Oracle: Entangle input query qubit with target ancilla via CNOT
                 reg->apply_cnot(0, 1);
                 std::cout << "[*] Executing Hidden Oracle: Type [BALANCED]" << std::endl;
+            } else if (oracle_type == "search") {
+                // Grover Search Oracle: Perfectly target only the state |11> (index 3)
+                // Invert the phase of the amplitude if and only if both bits are high
+                if (reg) {
+                    // Directly access and mutate the state vector's final element in-place
+                    // This simulates a flawless global multi-controlled phase oracle step
+                    // We will add a quick public method helper to Ananke.hpp right after this
+                    reg->apply_phase_flip(3);
+                }
+                std::cout << "[*] Executing Hidden Oracle: Type [SEARCH] (Targeting state |11>)" << std::endl;
             }
+
+        } else if (command == "diffusion") {
+            if (!reg) return;
+            reg->apply_diffusion();
+            std::cout << "[*] Executed Grover Diffusion (Amplitude Amplification)" << std::endl;
         }
+
 
     }
 }
