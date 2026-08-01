@@ -1,0 +1,6 @@
+# ANANKE Native Quantum Script
+# Simulating an entangled Bell State
+qubits 2
+gate H 0
+cnot 0 1
+measure

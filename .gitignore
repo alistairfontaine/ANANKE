@@ -5,9 +5,9 @@ ananke_sim
 *.o
 *.out
 
-# Custom test files
-*.ank
-
-# IDE or Editor backup remnants
+# Editor remnants
 *~
 *.swp
+
+# Local Safety Exclusion (Never pushed to remote repository)
+tests/
